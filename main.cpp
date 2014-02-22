@@ -21,6 +21,11 @@ LRESULT CALLBACK WndProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
       gl_draw->OnSize(LOWORD(lParam), HIWORD(lParam));
       break;
     }
+  case WM_TIMER: 
+    {
+      gl_draw->OnTimer(hwnd);
+      break;
+    }
   case WM_DESTROY:
     PostQuitMessage (0) ;
     return 0 ;
@@ -64,6 +69,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
   gl_draw->OnInit(hwnd);
   gl_draw->SetDrawEffect(new DrawIcosahedrons);
+  SetTimer(hwnd, 0, 50, NULL);
   ShowWindow (hwnd, iCmdShow) ;
   UpdateWindow (hwnd) ;
 
