@@ -19,6 +19,6 @@ public:
   void SetDrawEffect(DrawMethod* method);
 
 private:
-  HGLRC h_rc;
-  std::auto_ptr<DrawMethod> draw_;
+  HGLRC                       h_rc;
+  std::auto_ptr<DrawMethod>   draw_;
 };
