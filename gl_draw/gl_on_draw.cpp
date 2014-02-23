@@ -1,5 +1,5 @@
 #include <windows.h>
-#include <GL\gl.h>
+#include <GL\glew.h>
 #include "gl_on_draw.h"
 #include "draw_method.h"
 
@@ -7,6 +7,10 @@ GLfloat kAngle = 0.0f;
 
 //
 DrawMethod* GetTestDrawMethod();
+
+OpenGLDraw::OpenGLDraw() {
+  SetDrawEffect(GetTestDrawMethod());
+}
 
 OpenGLDraw::~OpenGLDraw() {
   ::wglDeleteContext(h_rc);
@@ -31,25 +35,33 @@ void OpenGLDraw::OnInit(HWND hwnd) {
   ::DeleteDC(dc);
 
   //ReleaseDC(hWnd, _hDC);
-  glClearColor( 0.0f, 0.0f, 0.0f, 1.0f); 
+  ::glClearColor( 0.0f, 0.0f, 0.0f, 1.0f); 
   // Useless ?
-  glMatrixMode(GL_MODELVIEW);	
-  glLoadIdentity();
+  ::glMatrixMode(GL_MODELVIEW);	
+  ::glLoadIdentity();
+  ::glewInit();
 
-  SetDrawEffect(GetTestDrawMethod());
+  if (draw_.get())
+    draw_->OnInit();
 }
 
 void OpenGLDraw::OnTimer(HWND hwnd) {
-  kAngle +=0.01f;
+  kAngle +=1;
   InvalidateRect(hwnd, NULL, FALSE);
 }
 
 void OpenGLDraw::OnPaint(HDC dc) {
 
   ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  
+#if 1
+  glLoadIdentity();     //复位旋转角度计数器
+ glTranslatef(0.0f,0.0f,-3.0f);
+  ::glRotatef(kAngle, 1, 0, 0);
+//    ::glRotatef(kAngle, 0, 1, 0);
+//    ::glRotatef(kAngle, 0, 0, 1);
+#else
   ::glRotatef(kAngle, 1, 1, 1);
-
+#endif
   if (draw_.get())
     draw_->OnDraw();
 
@@ -65,7 +77,10 @@ void OpenGLDraw::OnSize(int w, int h) {
 
   ::glMatrixMode(GL_PROJECTION);
   ::glLoadIdentity();	
-  ::glOrtho(-1, 1.0, -1, 1.0, -1.0, 1.0);
+  //::glOrtho(-1, 1.0, -1, 1.0, -1.0, 1.0);
+
+  gluPerspective(54.0f,(GLfloat)w/(GLfloat)h,1.0f,1000.0f);
+  glMatrixMode(GL_MODELVIEW);
   //::gluPerspective(45.0f,w / (GLfloat)h, 0.1f,100.0f);
 }
 

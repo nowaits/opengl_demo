@@ -6,6 +6,7 @@ class DrawMethod;
 
 class OpenGLDraw {
 public:
+  OpenGLDraw();
   ~OpenGLDraw();
   void OnInit(HWND hwnd);
   void OnTimer(HWND hwnd);
