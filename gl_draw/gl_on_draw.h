@@ -2,11 +2,7 @@
 
 #include <Windows.h>
 #include <memory>
-
-class DrawMethod {
-public:
-  virtual void OnDraw() = 0;
-};
+class DrawMethod;
 
 class OpenGLDraw {
 public:

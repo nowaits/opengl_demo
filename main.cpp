@@ -68,7 +68,6 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
     NULL) ;                     // creation parameters
 
   gl_draw->OnInit(hwnd);
-  gl_draw->SetDrawEffect(new DrawIcosahedrons);
   SetTimer(hwnd, 0, 50, NULL);
   ShowWindow (hwnd, iCmdShow) ;
   UpdateWindow (hwnd) ;

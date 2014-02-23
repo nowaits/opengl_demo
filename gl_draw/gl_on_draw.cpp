@@ -1,8 +1,12 @@
 #include <windows.h>
 #include <GL\gl.h>
 #include "gl_on_draw.h"
+#include "draw_method.h"
 
 GLfloat kAngle = 0.0f;
+
+//
+DrawMethod* GetTestDrawMethod();
 
 OpenGLDraw::~OpenGLDraw() {
   ::wglDeleteContext(h_rc);
@@ -31,6 +35,8 @@ void OpenGLDraw::OnInit(HWND hwnd) {
   // Useless ?
   glMatrixMode(GL_MODELVIEW);	
   glLoadIdentity();
+
+  SetDrawEffect(GetTestDrawMethod());
 }
 
 void OpenGLDraw::OnTimer(HWND hwnd) {

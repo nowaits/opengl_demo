@@ -1,5 +1,10 @@
-#include "draw_method.h"
+#include "draw_test.h"
+#include <Windows.h>
 #include <GL\gl.h>
+
+DrawMethod* GetTestDrawMethod() {
+  return new DrawIcosahedrons;
+}
 
 void DrawSample::OnDraw() {
   glPushMatrix();
