@@ -242,7 +242,7 @@ void DrawCube::OnDraw() {
   DrawInner();
 }
 void DrawCube::OnTimer() {
-  roate_angle_ += 1;
+  roate_angle_ += 3;
 }
 
 void DrawCube::DrawInner() {

@@ -1,9 +1,13 @@
 #include <windows.h>
 #include "gl_draw\gl_on_draw.h"
 #include "gl_draw\draw_method.h"
+#include "timer\timer.h"
 
-const wchar_t* title   = L"OpenGL demo";
-const wchar_t* caption = L"OpenGL demo";
+const wchar_t*  title   = L"OpenGL demo";
+const wchar_t*  caption = L"OpenGL demo";
+static HWND     g_hwnd  = NULL;
+Timer           g_timer;
+
 std::auto_ptr<OpenGLDraw> gl_draw(new OpenGLDraw);
 
 LRESULT CALLBACK WndProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
@@ -21,14 +25,11 @@ LRESULT CALLBACK WndProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
       gl_draw->OnSize(LOWORD(lParam), HIWORD(lParam));
       break;
     }
-  case WM_TIMER: 
-    {
-      gl_draw->OnTimer(hwnd);
-      break;
-    }
   case WM_DESTROY:
     PostQuitMessage (0) ;
     return 0 ;
+  default:
+    break;
   }
   return DefWindowProc (hwnd, message, wParam, lParam) ;
 }
@@ -68,11 +69,15 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
     NULL) ;                     // creation parameters
 
   gl_draw->OnInit(hwnd);
-  SetTimer(hwnd, 0, 15, NULL);
   ShowWindow (hwnd, iCmdShow) ;
   UpdateWindow (hwnd) ;
+  g_hwnd = hwnd;
+  g_timer.Start();
 
   while (GetMessage (&msg, NULL, 0, 0)) {
+    if (msg.message == Timer::g_timer_msg) {
+      gl_draw->OnTimer(hwnd);
+    }
     TranslateMessage (&msg) ;
     DispatchMessage (&msg) ;
   }
