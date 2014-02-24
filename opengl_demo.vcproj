@@ -189,10 +189,6 @@
 			Name="gl_draw"
 			>
 			<File
-				RelativePath=".\gl_draw\draw_method.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\gl_draw\draw_method.h"
 				>
 			</File>
@@ -200,8 +196,28 @@
 				RelativePath=".\gl_draw\gl_on_draw.cpp"
 				>
 			</File>
+		</Filter>
+		<Filter
+			Name="timer"
+			>
 			<File
-				RelativePath=".\gl_draw\gl_on_draw.h"
+				RelativePath=".\timer\timer.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\timer\timer.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="test"
+			>
+			<File
+				RelativePath=".\test\draw_test.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\test\draw_test.h"
 				>
 			</File>
 		</Filter>
