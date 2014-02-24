@@ -8,6 +8,7 @@ public:
 
   virtual void OnInit() override;
   virtual void OnDraw() override;
+  virtual void OnTimer() override{};
 };
 
 // 二十四面体
@@ -17,16 +18,29 @@ public:
 
   virtual void OnInit() override;
   virtual void OnDraw() override;
+  virtual void OnTimer() override{};
 };
 
 // cube
 class DrawCube 
   : public DrawMethod {
 public:
-  DrawCube();
+
+  enum DrawWays{
+    VERTEXS,        // original ways
+    DRAW_ARRAYS,    // vertex arrays
+    VBO,            // buffer object
+  };
+
+  DrawCube(DrawWays draw_ways = VBO);
   virtual void OnInit() override;
   virtual void OnDraw() override;
+  virtual void OnTimer() override;
 
 private:
-  bool user_vertex_obj_;
+  void DrawInner();
+
+private:
+  float     roate_angle_;
+  DrawWays  draw_ways_;
 };

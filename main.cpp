@@ -68,7 +68,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
     NULL) ;                     // creation parameters
 
   gl_draw->OnInit(hwnd);
-  SetTimer(hwnd, 0, 10, NULL);
+  SetTimer(hwnd, 0, 15, NULL);
   ShowWindow (hwnd, iCmdShow) ;
   UpdateWindow (hwnd) ;
 

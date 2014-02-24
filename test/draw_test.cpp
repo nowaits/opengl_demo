@@ -1,7 +1,7 @@
 #include "draw_test.h"
 #include <Windows.h>
 #include <gl\glew.h>
-#define BUFFER_OFFSET(offset) ((const GLubyte *)NULL + (offset))
+#include <stdlib.h>
 
 DrawMethod* GetTestDrawMethod() {
   return new DrawCube;
@@ -86,92 +86,76 @@ void DrawIcosahedrons::OnDraw() {
 
 
 // cube
-typedef struct _Point {
+struct Point {
   GLfloat position[3];
   GLfloat color[3];
   int     id;
-} Point;
+};
 
-typedef struct _Normal {
-  GLfloat normal_pointer[3];
-} Normal;
+struct Face {
+  // 点索引
+  GLint points[4];
+  // 法向量
+  GLfloat normal[3];
+  int     id;
+};
 
 // 将立方体的八个顶点保存到一个数组里面
-Point vertex_list[] = {
-  -0.5f, -0.5f, -0.5f, 0, 0, 1, 0,
-  0.5f, -0.5f, -0.5f, 0, 1, 1, 1,
-  -0.5f,  0.5f, -0.5f, 1, 0, 1, 2,
-  0.5f,  0.5f, -0.5f, 1, 1, 1, 3,
+Point vertexs[] = {
+  -0.5f, -0.5f, -0.5f,  0, 0, 1,    0,
+  0.5f, -0.5f, -0.5f,   0, 1, 1,    1,
+  -0.5f,  0.5f, -0.5f,  1, 0, 1,    2,
+  0.5f,  0.5f, -0.5f,   1, 1, 1,    3,
 
-  -0.5f, -0.5f,  0.5f, 0.5, 0, 1, 4,
-  0.5f, -0.5f,  0.5f, 0, 1, 0.5, 5,
-  -0.5f,  0.5f,  0.5f, 0, 0.5, 1, 6,
-  0.5f,  0.5f,  0.5f, 0, 0, 0.5, 7,
+  -0.5f, -0.5f, 0.5f,   0.5, 0, 1,  4,
+  0.5f, -0.5f,  0.5f,   0, 1, 0.5,  5,
+  -0.5f,  0.5f,  0.5f,  0, 0.5, 1,  6,
+  0.5f,  0.5f,  0.5f,   0, 0, 0.5,  7,
 };
 
-GLfloat vertex_listss[][3] = {
-  -0.5f, -0.5f, -0.5f,
-  0.5f, -0.5f, -0.5f, 
-  -0.5f,  0.5f, -0.5f, 
-  0.5f,  0.5f, -0.5f, 
-
-  -0.5f, -0.5f,  0.5f, 
-  0.5f, -0.5f,  0.5f, 
-  -0.5f,  0.5f,  0.5f, 
-  0.5f,  0.5f,  0.5f,
+Face faces[] = {
+  0, 2, 3, 1,   0, 0, -1.0f,    0,
+  0, 4, 6, 2,   -1.0f, 0, 0,    1,
+  0, 1, 5, 4,   0, -1.0f, 0,    2,
+  4, 5, 7, 6,   0, 0, 1.0f,     3,
+  1, 3, 7, 5,   1.0f, 0, 0,     4,
+  2, 6, 7, 3,   0, 1.0f, 0,     5,
 };
 
-GLfloat normalize[][3] = {
-  0, 0, -1.0f,
-  -1.0f, 0, 0,
-   0, -1.0f,  0,
-   0, 0, 1.0f,
-   1.0f, 0, 0,
-   0, 1.0f, 0,
+struct PointData {
+  GLfloat vector[3];
+  GLfloat normal[3];
+  GLfloat color[3];
 };
 
-// 将要使用的顶点的序号保存到一个数组里面
-static const GLint index_list[][4] = {
-  0, 2, 3, 1, 
-  0, 4, 6, 2,
-  0, 1, 5, 4,
-  4, 5, 7, 6,
-  1, 3, 7, 5,
-  2, 6, 7, 3,
-};
+PointData g_points[24];
+GLint g_index_list[24];
 
-DrawCube::DrawCube() 
-: user_vertex_obj_(false) {
+DrawCube::DrawCube(DrawWays draw_ways) 
+: draw_ways_(draw_ways), roate_angle_(0.0f) {
+  for(int i = 0 ; i < _countof(faces); i ++) {
+    for(int j = 0; j < 4; j ++) {
+      int index = faces[i].points[j];
 
-}
-void DrawCube::OnInit() {
-  if (user_vertex_obj_) {
-    GLuint vertex_buffer;
-    GLuint normalize_buffer;
-    GLuint index_buffer;
+      int offset = 4 * i + j;
 
-    // 分配一个缓冲区，并将顶点数据指定到其中
-    glGenBuffersARB(1, &vertex_buffer);
-    glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertex_buffer);
-    glBufferDataARB(GL_ARRAY_BUFFER_ARB,
-      sizeof(vertex_list), vertex_list, GL_STATIC_DRAW_ARB);
-  // 
-  //   // 分配一个缓冲区，并将序号数据指定到其中
-  //   glGenBuffersARB(1, &index_buffer);
-  //   glBindBufferARB(GL_ARRAY_BUFFER_ARB, index_buffer);
-  //   glBufferDataARB(GL_ARRAY_BUFFER_ARB,
-  //     sizeof(normalize), normalize, GL_STATIC_DRAW_ARB);
+      g_index_list[offset] = offset;
+      g_points[offset].vector[0] = vertexs[index].position[0];
+      g_points[offset].vector[1] = vertexs[index].position[1];
+      g_points[offset].vector[2] = vertexs[index].position[2];
 
+      g_points[offset].normal[0] = faces[i].normal[0];
+      g_points[offset].normal[1] = faces[i].normal[1];
+      g_points[offset].normal[2] = faces[i].normal[2];
 
-    // 分配一个缓冲区，并将序号数据指定到其中
-    glGenBuffersARB(1, &index_buffer);
-    glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, index_buffer);
-    glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB,
-      sizeof(index_list), index_list, GL_STATIC_DRAW_ARB);
+      g_points[offset].color[0] = vertexs[index].color[0];
+      g_points[offset].color[1] = vertexs[index].color[1];
+      g_points[offset].color[2] = vertexs[index].color[2];
+    }
   }
+}
 
-
-
+void DrawCube::OnInit() {
   glClearColor(0.0f,0.0f,0.0f,0.0f);   //清理颜色为黑色
   glShadeModel(GL_SMOOTH);     //使用平滑明暗处理
   glEnable(GL_DEPTH_TEST);     //剔除隐藏面
@@ -198,89 +182,104 @@ void DrawCube::OnInit() {
   //启用光
   glEnable(GL_LIGHT0);
 
-}
+  if (draw_ways_ == DRAW_ARRAYS) {
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(3, GL_FLOAT, sizeof(PointData), g_points);
 
-//绘制单位立方体
-void DrawCubess(float xPos,float yPos,float zPos)
-{
-  // glPushMatrix();
-  //glTranslatef(xPos,yPos,zPos);
-  glBegin(GL_QUADS);    //顶面
-  glNormal3f(0.0f,1.0f,0.0f);
-  glVertex3f(0.5f,0.5f,0.5f);
-  glVertex3f(0.5f,0.5f,-0.5f);
-  glVertex3f(-0.5f,0.5f,-0.5f);
-  glVertex3f(-0.5f,0.5f,0.5f);
-  glEnd();
-  glBegin(GL_QUADS);    //底面
-  glNormal3f(0.0f,-1.0f,0.0f);
-  glVertex3f(0.5f,-0.5f,0.5f);
-  glVertex3f(-0.5f,-0.5f,0.5f);
-  glVertex3f(-0.5f,-0.5f,-0.5f);
-  glVertex3f(0.5f,-0.5f,-0.5f);
-  glEnd();
-  glBegin(GL_QUADS);    //前面
-  glNormal3f(0.0f,0.0f,1.0f);
-  glVertex3f(0.5f,0.5f,0.5f);
-  glVertex3f(-0.5f,0.5f,0.5f);
-  glVertex3f(-0.5f,-0.5f,0.5f);
-  glVertex3f(0.5f,-0.5f,0.5f);
-  glEnd();
-  glBegin(GL_QUADS);    //背面
-  glNormal3f(0.0f,0.0f,-1.0f);
-  glVertex3f(0.5f,0.5f,-0.5f);
-  glVertex3f(0.5f,-0.5f,-0.5f);
-  glVertex3f(-0.5f,-0.5f,-0.5f);
-  glVertex3f(-0.5f,0.5f,-0.5f);
-  glEnd();
-  glBegin(GL_QUADS);    //左面
-  glNormal3f(-1.0f,0.0f,0.0f);
-  glVertex3f(-0.5f,0.5f,0.5f);
-  glVertex3f(-0.5f,0.5f,-0.5f);
-  glVertex3f(-0.5f,-0.5f,-0.5f);
-  glVertex3f(-0.5f,-0.5f,0.5f);
-  glEnd();
-  glBegin(GL_QUADS);    //右面
-  glNormal3f(1.0f,0.0f,0.0f);
-  glVertex3f(0.5f,0.5f,0.5f);
-  glVertex3f(0.5f,-0.5f,0.5f);
-  glVertex3f(0.5f,-0.5f,-0.5f);
-  glVertex3f(0.5f,0.5f,-0.5f);
-  glEnd();
-  // glPopMatrix();
+    glEnableClientState(GL_NORMAL_ARRAY);
+    glNormalPointer(GL_FLOAT, sizeof(PointData), (const GLubyte *)(g_points) + sizeof(GLfloat)*3);
+
+    glEnableClientState(GL_COLOR_ARRAY);
+    glColorPointer(3, GL_FLOAT, sizeof(PointData), (const GLubyte *)(sizeof(GLfloat)*3 *2));
+  }
+  else if (draw_ways_ == VBO) {
+    GLuint vertex_buffer;
+    GLuint index_buffer;
+
+    // 分配一个缓冲区，并将顶点数据指定到其中
+    glGenBuffersARB(1, &vertex_buffer);
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertex_buffer);
+    glBufferDataARB(GL_ARRAY_BUFFER_ARB,
+      sizeof(g_points), g_points, GL_STATIC_DRAW_ARB);
+
+    // 分配一个缓冲区，并将序号数据指定到其中
+    glGenBuffersARB(1, &index_buffer);
+    glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, index_buffer);
+    glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB,
+      sizeof(g_index_list), g_index_list, GL_STATIC_DRAW_ARB);
+
+
+    // 指定顶点数据
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(3, GL_FLOAT, sizeof(PointData), (const GLubyte *)0);
+
+    glEnableClientState(GL_NORMAL_ARRAY);
+    glNormalPointer(GL_FLOAT, sizeof(PointData), (const GLubyte *)(sizeof(GLfloat)*3));
+
+    glEnableClientState(GL_COLOR_ARRAY);
+    glColorPointer(3, GL_FLOAT, sizeof(PointData), (const GLubyte *)(sizeof(GLfloat)*3 *2));
+  }
 }
 
 void DrawCube::OnDraw() {
- // DrawCubess(0, 0, 0);return;;
- // glColor3f (1.0, 1.0, 1.0);
+  // DrawCubess(0, 0, 0);return;;
+   glColor3f (1.0, 1.0, 1.0);
   //glLoadIdentity ();             /* clear the matrix */
   /* viewing transformation  */
   // gluLookAt (0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
   // glScalef (1.0, 2.0, 1.0);      /* modeling transformation */ 
- //::glPolygonMode(GL_FRONT, GL_LINE);
- // ::glPolygonMode(GL_BACK, GL_POINT);
-   glFrontFace(GL_CCW);
+  //::glPolygonMode(GL_FRONT, GL_LINE);
+  // ::glPolygonMode(GL_BACK, GL_POINT);
+  glLoadIdentity();     //复位旋转角度计数器
+  glTranslatef(0.0f,0.0f,-3.0f);
+  ::glRotatef(roate_angle_, 1, 0, 0);
+  ::glRotatef(roate_angle_, 0, 1, 0);
+  ::glRotatef(roate_angle_, 0, 0, 1);
+  glFrontFace(GL_CCW);
   glCullFace(GL_BACK);
   glEnable(GL_CULL_FACE);
-  
-  if (user_vertex_obj_) {
-    // 实际使用时与顶点数组非常相似，只是在指定数组时不再指定实际的数组，改为指定NULL即可
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_COLOR_ARRAY);
-   
-    glVertexPointer(3, GL_FLOAT, sizeof(Point), NULL);
-    glColorPointer(3, GL_FLOAT, sizeof(Point), BUFFER_OFFSET(3*sizeof(GLfloat)));
-    glDrawElements(GL_QUADS, sizeof(index_list)/sizeof(**index_list), GL_UNSIGNED_INT, NULL);
-  }
-  else {
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_NORMAL_ARRAY);
- //   glEnableClientState(GL_COLOR_ARRAY);
-    glNormalPointer(GL_FLOAT, 0, normalize);
-   // glColorPointer(3, GL_FLOAT, sizeof(Point), (const GLubyte *)(&vertex_list + 3*sizeof(GLfloat)));
-    glVertexPointer(3, GL_FLOAT, 0, vertex_listss);
-    
 
-    glDrawElements(GL_QUADS, sizeof(index_list)/sizeof(**index_list), GL_UNSIGNED_INT, index_list);
+  DrawInner();
+}
+void DrawCube::OnTimer() {
+  roate_angle_ += 1;
+}
+
+void DrawCube::DrawInner() {
+  switch (draw_ways_) {
+case VERTEXS:
+  {
+    for(int i = 0 ; i < sizeof(g_index_list)/sizeof(g_index_list[0]); i += 4) {
+      glBegin(GL_QUADS);
+      for(int j = i; j < i + 4; j ++) {
+        int index = g_index_list[j];       
+        glNormal3f(
+          g_points[index].normal[0], 
+          g_points[index].normal[1], 
+          g_points[index].normal[2]);
+
+        glVertex3f(
+          g_points[index].vector[0], 
+          g_points[index].vector[1], 
+          g_points[index].vector[2]);
+      }
+      glEnd();
+    }
+  }
+  break;
+case DRAW_ARRAYS:
+  {
+    glDrawElements(GL_QUADS,
+      sizeof(g_index_list)/sizeof(g_index_list[0]), 
+      GL_UNSIGNED_INT, g_index_list);
+  }
+  break;
+case VBO:
+  {
+    glDrawElements(GL_QUADS, sizeof(g_index_list)/sizeof(g_index_list[0]), GL_UNSIGNED_INT, NULL);
+  }
+  break;
+default:
+  break;
   }
 }
