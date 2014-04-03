@@ -56,6 +56,8 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
     return 0 ;
   }
 
+  gl_draw->InitMSAA();
+
   hwnd = CreateWindow (title,                  // window class name
     caption, // window caption
     WS_OVERLAPPEDWINDOW,        // window style

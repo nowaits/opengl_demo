@@ -9,6 +9,9 @@ public:
   OpenGLDraw();
   ~OpenGLDraw();
   void OnInit(HWND hwnd);
+
+  void InitMSAA();
+
   void OnTimer(HWND hwnd);
   void OnPaint(HDC dc);
   void OnSize(int w, int h);
@@ -18,4 +21,6 @@ public:
 private:
   HGLRC                       h_rc;
   std::auto_ptr<DrawMethod>   draw_;
+
+  unsigned int                PixelFormat;
 };

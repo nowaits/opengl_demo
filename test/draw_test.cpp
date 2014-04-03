@@ -2,9 +2,10 @@
 #include <Windows.h>
 #include <gl\glew.h>
 #include <stdlib.h>
+#include "..\utils\utils.h"
 
 DrawMethod* GetTestDrawMethod() {
-  return new DrawCube;
+  return new DrawTexture;
 }
 
 void DrawSample::OnInit() {
@@ -282,4 +283,116 @@ case VBO:
 default:
   break;
   }
+}
+
+
+DrawTexture::DrawTexture(DrawWays draw_ways) 
+: draw_ways_(draw_ways), roate_angle_(0.0f) {
+  texture_ = 0;
+}
+
+void DrawTexture::OnInit() {  
+  glClearColor(1.0f,1.0f,1.0f,1.0f);
+}
+
+void DrawTexture::OnDraw() {
+#if 1
+  bool  smStatus=0;
+  GLint smBuf=0;
+  GLint sm=0;
+  glEnable(GL_MULTISAMPLE);
+  glGetIntegerv(GL_SAMPLE_BUFFERS,&smBuf);
+  glGetIntegerv(GL_SAMPLES,&sm);
+  if(smBuf==1&&sm>1){
+    glEnable(GL_MULTISAMPLE);
+    smStatus=1;
+  }
+  else{
+    printf("current GPU device not support for multisamples\n");
+  }
+#endif
+  // DrawCubess(0, 0, 0);return;;
+ // glColor3f (1.0, 1.0, 1.0);
+  //glLoadIdentity ();             /* clear the matrix */
+  /* viewing transformation  */
+  // gluLookAt (0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+  // glScalef (1.0, 2.0, 1.0);      /* modeling transformation */ 
+  //::glPolygonMode(GL_FRONT, GL_LINE);
+  // ::glPolygonMode(GL_BACK, GL_POINT);
+  glLoadIdentity();     //复位旋转角度计数器
+  //glTranslatef(0.0f,0.0f,-3.0f);
+
+ // 
+  
+  float w = 1;
+  float h = h_/(float)w_;
+  float x = -w/2;
+  float y = -h/2;
+
+  float vectorCoords[] = {
+    x, y,  x + w, y,x, y + h,
+    x + w, y + h      
+  };
+
+  x = 0;
+  y = 0;
+ 
+  float texCoords[] = {
+    x, y,  x + w, y,x, y + h,
+    x + w, y + h      
+  };
+
+  ::glRotatef(roate_angle_, 0, 0, 1);  
+
+  if (texture_ == 0) {
+    LoadGLTextures(L"texture_test.bmp", &texture_);
+  }
+
+  glEnable(GL_TEXTURE_2D);
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glVertexPointer(2, GL_FLOAT, 0, vectorCoords);
+
+  glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+  glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
+
+  glBindTexture(GL_TEXTURE_2D, texture_);  
+
+  
+  GLdouble eqn [4]={-0.3, 0, 0, 33};
+
+  glClipPlane(GL_CLIP_PLANE1,eqn); 
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+#if 1
+  if(smStatus){
+    glDisable(GL_MULTISAMPLE);
+  }
+#endif
+}
+void DrawTexture::OnTimer() {
+  roate_angle_ += 1;
+}
+
+bool DrawTexture::LoadGLTextures(wchar_t* file_name, GLuint * texture) {
+  std::vector<unsigned char> buffer;
+  dcodec_utils::BitmapData bitmap;
+
+  dcodec_utils::load_file(file_name, buffer);
+  if (!dcodec_utils::parse_bmp(buffer, bitmap))
+    return false;
+
+  w_ = bitmap.w;
+  h_ = bitmap.h;
+
+  glGenTextures(1,texture);     // Create The Texture
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 4);  
+
+  glBindTexture(GL_TEXTURE_2D, *texture);  
+  // Bind To The Texture ID 
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);   
+  // Linear Min Filter 
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);   
+  // Linear Mag Filter 
+  glTexImage2D(GL_TEXTURE_2D, 0, 3, bitmap.w, bitmap.h, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, &bitmap.data[0]); 
+
+  return true;
 }
