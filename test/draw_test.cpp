@@ -292,7 +292,7 @@ DrawTexture::DrawTexture(DrawWays draw_ways)
 }
 
 void DrawTexture::OnInit() {  
-  glClearColor(1.0f,1.0f,1.0f,1.0f);
+  glClearColor(1.0f,.0f,.0f,1.0f);
 }
 
 void DrawTexture::OnDraw() {
@@ -312,37 +312,71 @@ void DrawTexture::OnDraw() {
   }
 #endif
   // DrawCubess(0, 0, 0);return;;
- // glColor3f (1.0, 1.0, 1.0);
+  //glColor3f (1.0, 1.0, 1.0);
   //glLoadIdentity ();             /* clear the matrix */
   /* viewing transformation  */
   // gluLookAt (0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-  // glScalef (1.0, 2.0, 1.0);      /* modeling transformation */ 
+   
   //::glPolygonMode(GL_FRONT, GL_LINE);
   // ::glPolygonMode(GL_BACK, GL_POINT);
   glLoadIdentity();     //复位旋转角度计数器
   //glTranslatef(0.0f,0.0f,-3.0f);
-
+ 
  // 
-  
-  float w = 1;
-  float h = h_/(float)w_;
+  GLint rect[4];
+  glGetIntegerv(GL_VIEWPORT, rect);
+
+  glScalef (1, rect[2] / (float)rect[3], 1.0);      /* modeling transformation */ 
+
+  float w = 1.0f;
+  float h = w * h_ / w_;
   float x = -w/2;
   float y = -h/2;
 
-  float vectorCoords[] = {
-    x, y,  x + w, y,x, y + h,
-    x + w, y + h      
+  float vectorCoords[][2] = {
+    {x, y}, {x + w, y}, {x, y + h},
+    {x + w, y + h},
+    {-1, 0}, {1, 0},
+    {0, -1}, {0, 1},
   };
 
-  x = 0;
-  y = 0;
- 
-  float texCoords[] = {
-    x, y,  x + w, y,x, y + h,
-    x + w, y + h      
+  float l = 0;
+  float t = 0;
+  float r = 1;
+  float b = 1;
+
+  float texCoords[][2] = {
+    {l, t}, {r, t}, {l, b}, {r, b}
   };
 
-  ::glRotatef(roate_angle_, 0, 0, 1);  
+  ::glPushMatrix();
+  ::glTranslatef(0.2, 0, 0);
+  ::glRotatef(roate_angle_, 0, 0, 1);
+   
+#if 0
+  GLdouble eqn[4] = {0.0, -1.0, 0.0, 0};
+  glClipPlane (GL_CLIP_PLANE0, eqn);
+  glEnable (GL_CLIP_PLANE0);
+
+  GLdouble eqn1[4] = {-1,0, 0, 0};
+  glClipPlane (GL_CLIP_PLANE5, eqn1);
+  glEnable (GL_CLIP_PLANE5);
+
+  GLdouble eqn2[4] = {1,1, 0, 0.3};
+  glClipPlane (GL_CLIP_PLANE3, eqn2);
+  glEnable (GL_CLIP_PLANE3);
+#endif
+  glEnable(GL_LINE_SMOOTH);
+  glEnable(GL_BLEND);
+  //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+
+  glLineWidth(0.1);
+
+  glEnable(GL_POINT_SMOOTH);  
+  glEnable(GL_LINE_SMOOTH);  
+  glHint(GL_POINT_SMOOTH_HINT, GL_NICEST); // Make round points, not square points  
+  glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);  // Antialias the lines  
 
   if (texture_ == 0) {
     LoadGLTextures(L"texture_test.bmp", &texture_);
@@ -355,13 +389,31 @@ void DrawTexture::OnDraw() {
   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
 
+  GLfloat fColor[][4] = { 
+    {1.0, 1.0, 1.0, 1.0},
+    {1.0, 1.0, 1.0, 0.0},
+    {1.0, 1.0, 1.0, 0.0},
+    {1.0, 1.0, 1.0, 0.0},
+
+    {1.0, 1.0, 1.0, 1.0},
+    {1.0, 1.0, 1.0, 1.0},
+    {1.0, 1.0, 1.0, 1.0},
+    {0.0, 0.5, 0.0, 1.0},
+  };
+  glEnableClientState(GL_COLOR_ARRAY);
+  glColorPointer(4, GL_FLOAT, 0, fColor);
+
   glBindTexture(GL_TEXTURE_2D, texture_);  
 
-  
-  GLdouble eqn [4]={-0.3, 0, 0, 33};
-
-  glClipPlane(GL_CLIP_PLANE1,eqn); 
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  glColor4f(0, 0.5, 0, 0.4);
+  glDisable(GL_TEXTURE_2D);
+  glDrawArrays(GL_LINES, 4, 4);
+  glPopMatrix();
+  glColor4f(0, 0.5, 0, 0.4);
+  glDisable(GL_TEXTURE_2D);
+  glDrawArrays(GL_LINES, 4, 4);
+
 #if 1
   if(smStatus){
     glDisable(GL_MULTISAMPLE);
@@ -369,7 +421,7 @@ void DrawTexture::OnDraw() {
 #endif
 }
 void DrawTexture::OnTimer() {
-  roate_angle_ += 1;
+  roate_angle_ += 0.01;
 }
 
 bool DrawTexture::LoadGLTextures(wchar_t* file_name, GLuint * texture) {

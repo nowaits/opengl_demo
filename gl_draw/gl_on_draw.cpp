@@ -69,15 +69,31 @@ void OpenGLDraw::OnSize(int w, int h) {
   if (h == 0)
     h = 1;
 
+#if 1
+
+  glMatrixMode(GL_PROJECTION);
+
   ::glViewport(0, 0, w, h);	
+  ::gluOrtho2D(-1, 1, 1, -1);
+  //::gluPerspective(0.0f, (GLfloat)w / (GLfloat)h, 0.1f,100.0f);
 
-  //::glMatrixMode(GL_PROJECTION);
-  ::glLoadIdentity();	
-  ::glOrtho(-11, (GLfloat)w/(GLfloat)h, 1, -1.0, 0, 0);
+  glMatrixMode (GL_MODELVIEW);
+#else
+  int min_w = w < h ? w : h;
+  ::glViewport((w - min_w)/2, (h - min_w)/2,  min_w, min_w);	
 
- // gluPerspective(54.0f,(GLfloat)w/(GLfloat)h,1.0f,1000.0f);
- /// glMatrixMode(GL_MODELVIEW);
- // ::gluPerspective(45.0f,w / (GLfloat)h, 0.1f,100.0f);
+  glMatrixMode(GL_PROJECTION);
+
+  glLoadIdentity();
+// 
+//   if (w <= h)
+// 
+//     glOrtho(0, 1.5, 0, 1.5 * (GLfloat)h/(GLfloat)w, -10.0, 10.0);
+// 
+//   else
+// 
+//     glOrtho(0, 1.5*(GLfloat)w/(GLfloat)h, 0, 1.5, -10.0, 10.0);
+#endif
 }
 
 void OpenGLDraw::SetDrawEffect(DrawMethod* method) {
