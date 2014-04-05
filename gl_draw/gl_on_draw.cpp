@@ -6,6 +6,7 @@
 #include "MultiSample.h"
 #include <atlbase.h>
 #include <atlwin.h>
+#include <math.h>
 //
 DrawMethod* GetTestDrawMethod();
 
@@ -70,14 +71,30 @@ void OpenGLDraw::OnSize(int w, int h) {
     h = 1;
 
 #if 1
-
-  glMatrixMode(GL_PROJECTION);
-
   ::glViewport(0, 0, w, h);	
-  ::gluOrtho2D(-1, 1, 1, -1);
-  //::gluPerspective(0.0f, (GLfloat)w / (GLfloat)h, 0.1f,100.0f);
+  ::glMatrixMode(GL_PROJECTION);
 
+  glLoadIdentity();
+  double width = 1;
+  double height = width;
+
+  double depth_near = 3.0;
+
+  double depth_far = depth_near + 30;
+
+#if 0
+ glFrustum(-width, width, -height, height, depth_near, depth_far);
+#else
+  float angle = atan(width /depth_near) * 180 / 3.1415926 * 2;
+
+  ::gluPerspective(angle, 1, depth_near, depth_far);
+#endif
+  gluLookAt (0.0, 0.0, depth_near+1, .0, 0.0, 0.0, 0.0, 1.0, 0.0);
   glMatrixMode (GL_MODELVIEW);
+  glLoadIdentity();
+  
+  //::glOrtho(-1, 1, 1, -1, 0, 1);
+  
 #else
   int min_w = w < h ? w : h;
   ::glViewport((w - min_w)/2, (h - min_w)/2,  min_w, min_w);	
@@ -101,7 +118,6 @@ void OpenGLDraw::SetDrawEffect(DrawMethod* method) {
 }
 
 void OpenGLDraw::InitMSAA() {
-
   PIXELFORMATDESCRIPTOR pfd = {0};
   pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR );
   pfd.nVersion = 1;

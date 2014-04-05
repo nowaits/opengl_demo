@@ -296,21 +296,7 @@ void DrawTexture::OnInit() {
 }
 
 void DrawTexture::OnDraw() {
-#if 1
-  bool  smStatus=0;
-  GLint smBuf=0;
-  GLint sm=0;
-  glEnable(GL_MULTISAMPLE);
-  glGetIntegerv(GL_SAMPLE_BUFFERS,&smBuf);
-  glGetIntegerv(GL_SAMPLES,&sm);
-  if(smBuf==1&&sm>1){
-    glEnable(GL_MULTISAMPLE);
-    smStatus=1;
-  }
-  else{
-    printf("current GPU device not support for multisamples\n");
-  }
-#endif
+
   // DrawCubess(0, 0, 0);return;;
   //glColor3f (1.0, 1.0, 1.0);
   //glLoadIdentity ();             /* clear the matrix */
@@ -333,11 +319,13 @@ void DrawTexture::OnDraw() {
   float x = -w/2;
   float y = -h/2;
 
-  float vectorCoords[][2] = {
-    {x, y}, {x + w, y}, {x, y + h},
-    {x + w, y + h},
-    {-1, 0}, {1, 0},
-    {0, -1}, {0, 1},
+  float f = 0.0;
+
+  float vectorCoords[][3] = {
+    {x, y, f}, {x + w, y, f}, {x, y + h, f},
+    {x + w, y + h, f},
+    {-1, 0, f}, {1, 0, f},
+    {0, -1, f}, {0, 1, f},
   };
 
   float l = 0;
@@ -349,10 +337,14 @@ void DrawTexture::OnDraw() {
     {l, t}, {r, t}, {l, b}, {r, b}
   };
 
+  glLineWidth(0.1);
+
   ::glPushMatrix();
-  ::glTranslatef(0.2, 0, 0);
+  
   ::glRotatef(roate_angle_, 0, 0, 1);
-   
+  
+ // ::glTranslatef(0.2, 0, -.4);
+  
 #if 0
   GLdouble eqn[4] = {0.0, -1.0, 0.0, 0};
   glClipPlane (GL_CLIP_PLANE0, eqn);
@@ -371,8 +363,6 @@ void DrawTexture::OnDraw() {
   //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
 
-  glLineWidth(0.1);
-
   glEnable(GL_POINT_SMOOTH);  
   glEnable(GL_LINE_SMOOTH);  
   glHint(GL_POINT_SMOOTH_HINT, GL_NICEST); // Make round points, not square points  
@@ -384,7 +374,7 @@ void DrawTexture::OnDraw() {
 
   glEnable(GL_TEXTURE_2D);
   glEnableClientState(GL_VERTEX_ARRAY);
-  glVertexPointer(2, GL_FLOAT, 0, vectorCoords);
+  glVertexPointer(3, GL_FLOAT, 0, vectorCoords);
 
   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
@@ -410,18 +400,14 @@ void DrawTexture::OnDraw() {
   glDisable(GL_TEXTURE_2D);
   glDrawArrays(GL_LINES, 4, 4);
   glPopMatrix();
+#if 1
   glColor4f(0, 0.5, 0, 0.4);
   glDisable(GL_TEXTURE_2D);
   glDrawArrays(GL_LINES, 4, 4);
-
-#if 1
-  if(smStatus){
-    glDisable(GL_MULTISAMPLE);
-  }
 #endif
 }
 void DrawTexture::OnTimer() {
-  roate_angle_ += 0.01;
+  roate_angle_ += 0.5;
 }
 
 bool DrawTexture::LoadGLTextures(wchar_t* file_name, GLuint * texture) {

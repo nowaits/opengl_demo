@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="gb2312"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="8.00"
 	Name="opengl_demo"
 	ProjectGUID="{D5D0E55C-04E1-43B6-81E9-C0FB7BE7520D}"
 	RootNamespace="opengl_demo"
