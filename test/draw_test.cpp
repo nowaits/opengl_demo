@@ -330,7 +330,7 @@ void DrawTexture::OnDraw() {
 
   ::glPushMatrix();
   
-  ::glRotatef(roate_angle_, 0, 0, 91);
+  ::glRotatef(roate_angle_, 0, 1, 0);
   
   ::glTranslatef(0.2, 0, .1);
   
