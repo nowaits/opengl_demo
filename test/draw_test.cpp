@@ -292,23 +292,12 @@ DrawTexture::DrawTexture(DrawWays draw_ways)
 }
 
 void DrawTexture::OnInit() {  
-  glClearColor(1.0f,.0f,.0f,1.0f);
+  glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void DrawTexture::OnDraw() {
+  glLoadIdentity();
 
-  // DrawCubess(0, 0, 0);return;;
-  //glColor3f (1.0, 1.0, 1.0);
-  //glLoadIdentity ();             /* clear the matrix */
-  /* viewing transformation  */
-  // gluLookAt (0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-   
-  //::glPolygonMode(GL_FRONT, GL_LINE);
-  // ::glPolygonMode(GL_BACK, GL_POINT);
-  glLoadIdentity();     //复位旋转角度计数器
-  //glTranslatef(0.0f,0.0f,-3.0f);
- 
- // 
   GLint rect[4];
   glGetIntegerv(GL_VIEWPORT, rect);
 
@@ -341,9 +330,9 @@ void DrawTexture::OnDraw() {
 
   ::glPushMatrix();
   
-  ::glRotatef(roate_angle_, 0, 0, 1);
+  ::glRotatef(roate_angle_, 0, 0, 91);
   
- // ::glTranslatef(0.2, 0, -.4);
+  ::glTranslatef(0.2, 0, .1);
   
 #if 0
   GLdouble eqn[4] = {0.0, -1.0, 0.0, 0};
@@ -385,10 +374,10 @@ void DrawTexture::OnDraw() {
     {1.0, 1.0, 1.0, 0.0},
     {1.0, 1.0, 1.0, 0.0},
 
-    {1.0, 1.0, 1.0, 1.0},
-    {1.0, 1.0, 1.0, 1.0},
-    {1.0, 1.0, 1.0, 1.0},
-    {0.0, 0.5, 0.0, 1.0},
+    {1.0, 0.0, 0.0, 1.0},
+    {0.0, 1.0, 1.0, 1.0},
+    {0.0, 1.0, 0.0, 1.0},
+    {0.0, 0.5, 1.0, 1.0},
   };
   glEnableClientState(GL_COLOR_ARRAY);
   glColorPointer(4, GL_FLOAT, 0, fColor);
@@ -396,12 +385,13 @@ void DrawTexture::OnDraw() {
   glBindTexture(GL_TEXTURE_2D, texture_);  
 
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-  glColor4f(0, 0.5, 0, 0.4);
+
   glDisable(GL_TEXTURE_2D);
   glDrawArrays(GL_LINES, 4, 4);
   glPopMatrix();
+
 #if 1
-  glColor4f(0, 0.5, 0, 0.4);
+
   glDisable(GL_TEXTURE_2D);
   glDrawArrays(GL_LINES, 4, 4);
 #endif

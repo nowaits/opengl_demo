@@ -90,6 +90,11 @@ void OpenGLDraw::OnSize(int w, int h) {
   ::gluPerspective(angle, 1, depth_near, depth_far);
 #endif
   gluLookAt (0.0, 0.0, depth_near+1, .0, 0.0, 0.0, 0.0, 1.0, 0.0);
+
+  double or_w = 0.5;
+
+  ::glOrtho(-or_w, or_w, -or_w, or_w, 0, 1);
+
   glMatrixMode (GL_MODELVIEW);
   glLoadIdentity();
   
