@@ -70,7 +70,6 @@ void OpenGLDraw::OnSize(int w, int h) {
   if (h == 0)
     h = 1;
 
-#if 1
   ::glViewport(0, 0, w, h);	
   ::glMatrixMode(GL_PROJECTION);
 
@@ -97,25 +96,6 @@ void OpenGLDraw::OnSize(int w, int h) {
 
   glMatrixMode (GL_MODELVIEW);
   glLoadIdentity();
-  
-  //::glOrtho(-1, 1, 1, -1, 0, 1);
-  
-#else
-  int min_w = w < h ? w : h;
-  ::glViewport((w - min_w)/2, (h - min_w)/2,  min_w, min_w);	
-
-  glMatrixMode(GL_PROJECTION);
-
-  glLoadIdentity();
-// 
-//   if (w <= h)
-// 
-//     glOrtho(0, 1.5, 0, 1.5 * (GLfloat)h/(GLfloat)w, -10.0, 10.0);
-// 
-//   else
-// 
-//     glOrtho(0, 1.5*(GLfloat)w/(GLfloat)h, 0, 1.5, -10.0, 10.0);
-#endif
 }
 
 void OpenGLDraw::SetDrawEffect(DrawMethod* method) {
