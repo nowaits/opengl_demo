@@ -68,34 +68,47 @@ void OpenGLDraw::OnPaint(HDC dc) {
 
 void OpenGLDraw::OnSize(int w, int h) {
   if (h == 0)
-    h = 1;
+    h = 1;	
 
-  ::glViewport(0, 0, w, h);	
-  ::glMatrixMode(GL_PROJECTION);
+  ::glViewport(0, 0, w, h);
 
-  glLoadIdentity();
   double width = 1;
-  double height = width;
+  double height = width * h / w;
 
-  double depth_near = 3.0;
+  double depth_near = 11;
 
-  double depth_far = depth_near + 30;
+  double shrink_rotio = 0.5;
+  double pos_n_f = 0.8;
 
-#if 0
- glFrustum(-width, width, -height, height, depth_near, depth_far);
+  double depth_far = depth_near * ((1/shrink_rotio - 1) /pos_n_f + 1);
+
+  ::glMatrixMode(GL_PROJECTION);
+  ::glLoadIdentity();
+
+#if 1 // 透视投影
+
+#if 1
+  glFrustum(-width, width, -height, height, depth_near, depth_far);
 #else
-  float angle = atan(width /depth_near) * 180 / 3.1415926 * 2;
-
-  ::gluPerspective(angle, 1, depth_near, depth_far);
+  float angle = atan((height < width ? height : width) / depth_near) * 180 / 3.1415926 * 2;
+  ::gluPerspective(angle,  w/(float)h, depth_near, depth_far);
 #endif
-  gluLookAt (0.0, 0.0, depth_near+1, .0, 0.0, 0.0, 0.0, 1.0, 0.0);
+  ::gluLookAt (0.0, 0.0, depth_near + (depth_far - depth_near) * pos_n_f, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
-  double or_w = 0.5;
+#else // 正射投影
 
-  ::glOrtho(-or_w, or_w, -or_w, or_w, 0, 0.5);
+#if 1 // 3d
+  ::glOrtho(-width, width, -height, height, depth_near, depth_far);
+  ::gluLookAt (0.0, 0.0, depth_near + (depth_far - depth_near) * pos_n_f, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
-  glMatrixMode (GL_MODELVIEW);
-  glLoadIdentity();
+#else // 2d
+  ::gluOrtho2D(-width, width, -height, height);
+#endif
+
+#endif
+
+  ::glMatrixMode (GL_MODELVIEW);
+  ::glLoadIdentity();
 }
 
 void OpenGLDraw::SetDrawEffect(DrawMethod* method) {

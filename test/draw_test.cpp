@@ -296,25 +296,23 @@ void DrawTexture::OnInit() {
 }
 
 void DrawTexture::OnDraw() {
-  glLoadIdentity();
+  glPushMatrix();
 
   GLint rect[4];
   glGetIntegerv(GL_VIEWPORT, rect);
 
-  glScalef (1, rect[2] / (float)rect[3], 1.0);      /* modeling transformation */ 
-
-  float w = 1.0f;
+  float w = 2.0 * w_/rect[2];
   float h = w * h_ / w_;
   float x = -w/2;
   float y = -h/2;
 
-  float f = 0.0;
+  float f = 0;//557*7-100;
 
   float vectorCoords[][3] = {
     {x, y, f}, {x + w, y, f}, {x, y + h, f},
     {x + w, y + h, f},
-    {-1, 0, f}, {1, 0, f},
-    {0, -1, f}, {0, 1, f},
+    {-1000, 0, f}, {1000, 0, f},
+    {0, -1000, f}, {0, 1000, f},
   };
 
   float l = 0;
@@ -332,7 +330,7 @@ void DrawTexture::OnDraw() {
   
   ::glRotatef(roate_angle_, 0, 1, 0);
   
-  ::glTranslatef(0.2, 0, .1);
+  ::glTranslatef(0, 0, 0);
   
 #if 0
   GLdouble eqn[4] = {0.0, -1.0, 0.0, 0};
@@ -395,9 +393,11 @@ void DrawTexture::OnDraw() {
   glDisable(GL_TEXTURE_2D);
   glDrawArrays(GL_LINES, 4, 4);
 #endif
+
+  glPopMatrix();
 }
 void DrawTexture::OnTimer() {
-  roate_angle_ += 0.5;
+  roate_angle_ += 1;
 }
 
 bool DrawTexture::LoadGLTextures(wchar_t* file_name, GLuint * texture) {
