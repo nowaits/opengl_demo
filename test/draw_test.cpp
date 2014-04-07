@@ -3,7 +3,7 @@
 #include <gl\glew.h>
 #include <stdlib.h>
 #include "..\utils\utils.h"
-
+#include <GL/glut.h>
 DrawMethod* GetTestDrawMethod() {
   return new DrawTexture;
 }
@@ -168,7 +168,7 @@ void DrawCube::OnInit() {
   float armAngle[2]={0.0f,0.0f};
   float ambientLight[]={0.3f,0.5f,0.8f,1.0f};  //环境光
   float diffuseLight[]={0.25f,0.25f,0.25f,1.0f}; //散射光
-  float lightPosition[]={0.0f,0.0f,1.0f,0.0f}; //光源位置
+  float lightPosition[]={0.0f,1.0f,1.0f,0.0f}; //光源位置
   //材质变量
   float matAmbient[]={1.0f,1.0f,1.0f,1.0f};
   float matDiff[]={1.0f,1.0f,1.0f,1.0f};
@@ -222,6 +222,92 @@ void DrawCube::OnInit() {
   }
 }
 
+void drawCube(float w) {
+
+  w /= 2;
+  // 将立方体的八个顶点保存到一个数组里面
+  Point vertexs[] = {
+    -w, -w, -w,   0, 0, 1,    0,
+    w,  -w, -w,   0, 1, 1,    1,
+    -w,  w, -w,   1, 0, 1,    2,
+    w,   w, -w,   1, 1, 1,    3,
+
+    -w, -w,  w,   0.5, 0, 1,  4,
+     w, -w,  w,   0, 1, 0.5,  5,
+    -w,  w,  w,   0, 0.5, 1,  6,
+     w,  w,  w,   0, 0, 0.5,  7,
+  };
+
+  Face faces[] = {
+    0, 2, 3, 1,   0, 0, -1.0f,    0,
+    0, 4, 6, 2,   -1.0f, 0, 0,    1,
+    0, 1, 5, 4,   0, -1.0f, 0,    2,
+    4, 5, 7, 6,   0, 0, 1.0f,     3,
+    1, 3, 7, 5,   1.0f, 0, 0,     4,
+    2, 6, 7, 3,   0, 1.0f, 0,     5,
+  };
+
+  PointData points[24];
+  GLint index_list[24];
+
+  float current_color[4];
+  ::glGetFloatv(GL_CURRENT_COLOR, current_color);
+
+  for(int i = 0 ; i < _countof(faces); i ++) {
+    for(int j = 0; j < 4; j ++) {
+      int index = faces[i].points[j];
+
+      int offset = 4 * i + j;
+
+      index_list[offset] = offset;
+      points[offset].vector[0] = vertexs[index].position[0];
+      points[offset].vector[1] = vertexs[index].position[1];
+      points[offset].vector[2] = vertexs[index].position[2];
+
+      points[offset].normal[0] = faces[i].normal[0];
+      points[offset].normal[1] = faces[i].normal[1];
+      points[offset].normal[2] = faces[i].normal[2];
+#if 0
+      points[offset].color[0] = vertexs[index].color[0];
+      points[offset].color[1] = vertexs[index].color[1];
+      points[offset].color[2] = vertexs[index].color[2];
+#else
+      points[offset].color[0] = current_color[0];
+      points[offset].color[1] = current_color[1];
+      points[offset].color[2] = current_color[2];
+#endif
+    }
+  }
+  GLuint vertex_buffer;
+  GLuint index_buffer;
+
+  // 指定顶点数据
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glVertexPointer(3, GL_FLOAT, sizeof(PointData), (const GLubyte *)(points));
+
+  glEnableClientState(GL_NORMAL_ARRAY);
+  glNormalPointer(GL_FLOAT, sizeof(PointData), (const GLubyte *)((const GLubyte *)(points) + sizeof(GLfloat)*3));
+
+  glEnableClientState(GL_COLOR_ARRAY);
+  glColorPointer(3, GL_FLOAT, sizeof(PointData), (const GLubyte *)((const GLubyte *)(points) + sizeof(GLfloat)*3 *2));
+
+   glShadeModel(GL_SMOOTH);     //使用平滑明暗处理
+   glEnable(GL_DEPTH_TEST);     //剔除隐藏面
+   glEnable(GL_CULL_FACE);      //不计算多边形背面
+   glFrontFace(GL_CCW);      //多边形逆时针方向为正面
+
+  GLint g[2];
+  ::glGetIntegerv(GL_POLYGON_MODE, g);
+
+  ::glPolygonMode(GL_FRONT, GL_LINE);
+  ::glPolygonMode(GL_BACK, GL_LINE);
+
+  glDrawElements(GL_QUADS,
+    sizeof(index_list)/sizeof(index_list[0]), GL_UNSIGNED_INT, index_list);
+  ::glPolygonMode(GL_FRONT, g[0]);
+  ::glPolygonMode(GL_BACK, g[1]);
+}
+
 void DrawCube::OnDraw() {
   // DrawCubess(0, 0, 0);return;;
    glColor3f (1.0, 1.0, 1.0);
@@ -229,13 +315,11 @@ void DrawCube::OnDraw() {
   /* viewing transformation  */
   // gluLookAt (0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
   // glScalef (1.0, 2.0, 1.0);      /* modeling transformation */ 
-  //::glPolygonMode(GL_FRONT, GL_LINE);
-  // ::glPolygonMode(GL_BACK, GL_POINT);
+  ::glPolygonMode(GL_FRONT, GL_LINE);
+   ::glPolygonMode(GL_BACK, GL_POINT);
   glLoadIdentity();     //复位旋转角度计数器
-  glTranslatef(0.0f,0.0f,-3.0f);
-  ::glRotatef(roate_angle_, 1, 0, 0);
-  ::glRotatef(roate_angle_, 0, 1, 0);
-  ::glRotatef(roate_angle_, 0, 0, 1);
+
+  ::glRotatef(roate_angle_, 1, 1, 1);
   glFrontFace(GL_CCW);
   glCullFace(GL_BACK);
   glEnable(GL_CULL_FACE);
@@ -292,7 +376,7 @@ DrawTexture::DrawTexture(DrawWays draw_ways)
 }
 
 void DrawTexture::OnInit() {  
-  glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+  glClearColor (0.0, 0.0, 0.0, 0.0);
 }
 
 void DrawTexture::OnDraw() {
@@ -317,6 +401,18 @@ void DrawTexture::OnDraw() {
     {0, -1000, dl}, {0, 1000, dl},
   };
 
+  float normal[][3] = {
+    {0, 0, 1},
+    {0, 0, 1},
+    {0, 0, 1},
+    {0, 0, 1},
+
+    {0, 0, 1},
+    {0, 0, 1},
+    {0, 0, 1},
+    {0, 0, 1},
+  };
+
   float l = 0;
   float t = 0;
   float r = 1;
@@ -325,15 +421,54 @@ void DrawTexture::OnDraw() {
   float texCoords[][2] = {
     {l, t}, {r, t}, {l, b}, {r, b}
   };
-
-  glLineWidth(0.1);
-
+  
+  ::glLineWidth(0.1);
   ::glPushMatrix();
+ 
+#if 1
+  ::glPushMatrix();
+  ::glRotatef(roate_angle_*10, 1, 1, 0);
+  ::glEnable (GL_LIGHTING);
+  ::glEnable(GL_LIGHT0);
+  GLfloat position[] = { 0.0, .0, 1.0, 0.0 };
+
+  float spot_direct[] = {0, 0, -1};
+
+  float ambientLight[]={1, 1, 1, 1.0f};  //环境光
+
+  ::glLightfv(GL_LIGHT0,GL_AMBIENT, ambientLight);
+  ::glLightfv (GL_LIGHT0, GL_POSITION, position);
+  ::glLightf (GL_LIGHT0, GL_SPOT_CUTOFF, 1);
+  ::glLightfv (GL_LIGHT0, GL_SPOT_DIRECTION, spot_direct);
   
-  ::glRotatef(roate_angle_, 0, 1, 0);
-  
-  ::glTranslatef(0, 0, 0);
-  
+  if (true){
+    ::glPushMatrix();
+    glDisable (GL_LIGHTING);
+    glTranslatef(position[0], position[1], position[2]);
+    glColor3f (1.0, 0.0, 0.0);
+    drawCube (0.1);
+    glEnable (GL_LIGHTING);
+    ::glPopMatrix();
+  }
+  ::glPopMatrix();
+
+  if (false) {
+    GLfloat earth_mat_ambient[]   = {0, 0, 0, 1.0f};
+    GLfloat earth_mat_diffuse[]   = {0.0f, 0.0f, 1, 1.0f};
+    GLfloat earth_mat_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    GLfloat earth_mat_emission[] = {0.1f, 0.1f, 0.1f, 1.0f};
+    GLfloat earth_mat_shininess   = 1.0f;
+
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT,    earth_mat_ambient);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,    earth_mat_diffuse);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR,   earth_mat_specular);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,   earth_mat_emission);
+    glMaterialf (GL_FRONT_AND_BACK, GL_SHININESS,  earth_mat_shininess);
+  }
+#else
+  ::glEnable (GL_LIGHTING);
+  ::glEnable(GL_LIGHT0);
+#endif
 #if 0
   GLdouble eqn[4] = {0.0, -1.0, 0.0, 0};
   glClipPlane (GL_CLIP_PLANE0, eqn);
@@ -379,6 +514,10 @@ void DrawTexture::OnDraw() {
     {1.0, 0.0, 0.0, 1.0},
     {1.0, 0.0, 0.0, 1.0},
   };
+
+  glEnableClientState(GL_NORMAL_ARRAY);
+  glNormalPointer(GL_FLOAT, 0, normal);
+
   glEnableClientState(GL_COLOR_ARRAY);
   glColorPointer(4, GL_FLOAT, 0, fColor);
 
@@ -386,7 +525,6 @@ void DrawTexture::OnDraw() {
 
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-  glDisable(GL_TEXTURE_2D);
   glDrawArrays(GL_LINES, 4, 4);
   glPopMatrix();
 
@@ -399,7 +537,7 @@ void DrawTexture::OnDraw() {
   glPopMatrix();
 }
 void DrawTexture::OnTimer() {
-  roate_angle_ += 1;
+  roate_angle_ += 0.1;
 }
 
 bool DrawTexture::LoadGLTextures(wchar_t* file_name, GLuint * texture) {
