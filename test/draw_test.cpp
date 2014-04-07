@@ -297,6 +297,7 @@ void DrawTexture::OnInit() {
 
 void DrawTexture::OnDraw() {
   glPushMatrix();
+  glEnable(GL_DEPTH_TEST);
 
   GLint rect[4];
   glGetIntegerv(GL_VIEWPORT, rect);
@@ -306,13 +307,14 @@ void DrawTexture::OnDraw() {
   float x = -w/2;
   float y = -h/2;
 
-  float f = 0;//557*7-100;
+  float f = -0;
 
+  float dl = 0.2;
   float vectorCoords[][3] = {
     {x, y, f}, {x + w, y, f}, {x, y + h, f},
     {x + w, y + h, f},
-    {-1000, 0, f}, {1000, 0, f},
-    {0, -1000, f}, {0, 1000, f},
+    {-1000, 0, dl}, {1000, 0, dl},
+    {0, -1000, dl}, {0, 1000, dl},
   };
 
   float l = 0;
@@ -373,9 +375,9 @@ void DrawTexture::OnDraw() {
     {1.0, 1.0, 1.0, 0.0},
 
     {1.0, 0.0, 0.0, 1.0},
-    {0.0, 1.0, 1.0, 1.0},
-    {0.0, 1.0, 0.0, 1.0},
-    {0.0, 0.5, 1.0, 1.0},
+    {1.0, 0.0, 0.0, 1.0},
+    {1.0, 0.0, 0.0, 1.0},
+    {1.0, 0.0, 0.0, 1.0},
   };
   glEnableClientState(GL_COLOR_ARRAY);
   glColorPointer(4, GL_FLOAT, 0, fColor);

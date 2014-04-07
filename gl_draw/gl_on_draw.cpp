@@ -85,7 +85,7 @@ void OpenGLDraw::OnSize(int w, int h) {
   ::glMatrixMode(GL_PROJECTION);
   ::glLoadIdentity();
 
-#if 1 // 透视投影
+#if 0 // 透视投影
 
 #if 1
   glFrustum(-width, width, -height, height, depth_near, depth_far);
