@@ -372,14 +372,121 @@ default:
 
 DrawTexture::DrawTexture(DrawWays draw_ways) 
 : draw_ways_(draw_ways), roate_angle_(0.0f) {
-  texture_ = 0;
 }
 
 void DrawTexture::OnInit() {  
-  glClearColor (0.0, 0.0, 0.0, 0.0);
+  glClearColor (1.0, 0.0, 0.0, 0.0);
+}
+
+void drawTexture(int texture_id, float rc[4], float alpha) {
+  float f = - 0;
+  float vectorCoords[][2] = {
+    {rc[0], rc[1]}, 
+    {rc[2], rc[1]}, 
+    {rc[2], rc[3]},
+    {rc[0], rc[3]},
+  };
+
+  int index[_countof(vectorCoords)] = {0};
+
+  for(int i = 0; i < _countof(vectorCoords); i ++)
+    index[i] = i;
+
+  float normal[][3] = {
+    {0, 0, 1},
+    {0, 0, 1},
+    {0, 0, 1},
+    {0, 0, 1},
+  };
+
+  float l = 0;
+  float t = 0;
+  float r = 1;
+  float b = 1;
+
+  float texCoords[][2] = {
+    {l, t}, {r, t}, {r, b}, {l, b},
+  };
+
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  glEnable(GL_TEXTURE_2D);
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glVertexPointer(2, GL_FLOAT, 0, vectorCoords);
+
+  glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+  glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
+
+  GLfloat fColor[][4] = { 
+    {1.0, 1.0, 1.0, alpha},
+    {1.0, 1.0, 1.0, alpha},
+    {1.0, 1.0, 1.0, alpha},
+    {1.0, 1.0, 1.0, alpha},
+  };
+
+  glEnableClientState(GL_NORMAL_ARRAY);
+  glNormalPointer(GL_FLOAT, 0, normal);
+
+  glEnableClientState(GL_COLOR_ARRAY);
+  glColorPointer(4, GL_FLOAT, 0, fColor);
+
+  glDrawElements(GL_TRIANGLE_FAN, _countof(index), GL_UNSIGNED_INT, index);
+}
+
+void drawCenterTexture(int texture_id, float alpha) {
+  GLint rect[4];
+  glGetIntegerv(GL_VIEWPORT, rect);
+
+  glBindTexture(GL_TEXTURE_2D, texture_id);
+
+  float ww, hh;
+
+  glGetTexLevelParameterfv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &ww);
+  glGetTexLevelParameterfv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &hh);
+
+  float w = 2.0 * ww/rect[2];
+  float h = w * hh / ww;
+  float x = -w/2;
+  float y = -h/2;
+
+  float rc[] = {x, y, x + w, y + h};
+  ::glPushMatrix();
+  ::glRotatef(alpha*90, 0, 0, 1);
+  ::drawTexture(texture_id, rc, alpha);
+  ::glPopMatrix();
 }
 
 void DrawTexture::OnDraw() {
+  POINT pt = {0, 0};
+
+  if (textures_.empty()) {
+    std::vector<std::wstring> file_names;
+    file_names.push_back(L"texture_test.bmp");
+    file_names.push_back(L"texture_test2.bmp");
+    LoadGLTextures(file_names);
+  }
+
+  drawCenterTexture(textures_[0], roate_angle_/3);
+  if (roate_angle_/3 > 1)
+    roate_angle_ = 0;
+
+#if 0
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  glColor4f(1, 0, 0, 0.5);
+  glRectf(-0.5, -0.5, 0.25, 0.25);
+  
+
+  float al = 0.3;
+  glColor4f(1, 0, 0, al);
+
+
+  glRectf(-0.25, -0.25, 0.5, 0.5);
+#endif
   glPushMatrix();
   glEnable(GL_DEPTH_TEST);
 
@@ -391,12 +498,36 @@ void DrawTexture::OnDraw() {
   float x = -w/2;
   float y = -h/2;
 
-  float f = -0;
+  float f = 0.3;
+
+  float ww = 0.2 * w_/rect[2];
+  float hh = ww * h_ / w_;
+  float xx = -ww/2;
+  float yy = -hh/2;
+
+  float ff = 0.2;
+  float vectorCoords[][3] = {
+    {x, y, f}, 
+    {x + w, y, f}, 
+     {x + w, y + h, f},
+    {x, y + h, f},
+   
+
+    {xx, yy, ff}, 
+    {xx + ww, yy, ff}, 
+     {xx + ww, yy + hh, ff},
+    {xx, yy + hh, ff},
+   
+  };
+
+  int index[_countof(vectorCoords)] = {0};
+
+  for(int i = 0; i < _countof(vectorCoords); i ++)
+    index[i] = i;
 
   float dl = 0.2;
-  float vectorCoords[][3] = {
-    {x, y, f}, {x + w, y, f}, {x, y + h, f},
-    {x + w, y + h, f},
+
+  float axisCoords[][3] = {
     {-1000, 0, dl}, {1000, 0, dl},
     {0, -1000, dl}, {0, 1000, dl},
   };
@@ -419,7 +550,8 @@ void DrawTexture::OnDraw() {
   float b = 1;
 
   float texCoords[][2] = {
-    {l, t}, {r, t}, {l, b}, {r, b}
+    {l, t}, {r, t}, {r, b}, {l, b},
+    {l, t}, {r, t},  {r, b},{l, b},
   };
   
   ::glLineWidth(0.1);
@@ -427,9 +559,9 @@ void DrawTexture::OnDraw() {
  
 #if 1
   ::glPushMatrix();
-  ::glRotatef(roate_angle_*10, 1, 1, 0);
-  ::glEnable (GL_LIGHTING);
-  ::glEnable(GL_LIGHT0);
+  ::glRotatef(roate_angle_*10, 0, 1, 0);
+  //::glEnable (GL_LIGHTING);
+  //::glEnable(GL_LIGHT0);
   GLfloat position[] = { 0.0, .0, 1.0, 0.0 };
 
   float spot_direct[] = {0, 0, -1};
@@ -443,11 +575,11 @@ void DrawTexture::OnDraw() {
   
   if (true){
     ::glPushMatrix();
-    glDisable (GL_LIGHTING);
+   // glDisable (GL_LIGHTING);
     glTranslatef(position[0], position[1], position[2]);
     glColor3f (1.0, 0.0, 0.0);
     drawCube (0.1);
-    glEnable (GL_LIGHTING);
+  //  glEnable (GL_LIGHTING);
     ::glPopMatrix();
   }
   ::glPopMatrix();
@@ -483,18 +615,14 @@ void DrawTexture::OnDraw() {
   glEnable (GL_CLIP_PLANE3);
 #endif
   glEnable(GL_LINE_SMOOTH);
+
   glEnable(GL_BLEND);
-  //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   glEnable(GL_POINT_SMOOTH);  
   glEnable(GL_LINE_SMOOTH);  
   glHint(GL_POINT_SMOOTH_HINT, GL_NICEST); // Make round points, not square points  
   glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);  // Antialias the lines  
-
-  if (texture_ == 0) {
-    LoadGLTextures(L"texture_test.bmp", &texture_);
-  }
 
   glEnable(GL_TEXTURE_2D);
   glEnableClientState(GL_VERTEX_ARRAY);
@@ -505,9 +633,9 @@ void DrawTexture::OnDraw() {
 
   GLfloat fColor[][4] = { 
     {1.0, 1.0, 1.0, 1.0},
-    {1.0, 1.0, 1.0, 0.0},
-    {1.0, 1.0, 1.0, 0.0},
-    {1.0, 1.0, 1.0, 0.0},
+    {1.0, 1.0, 1.0, 1.0},
+    {1.0, 1.0, 1.0, 1.0},
+    {1.0, 1.0, 1.0, 1.0},
 
     {1.0, 0.0, 0.0, 1.0},
     {1.0, 0.0, 0.0, 1.0},
@@ -515,24 +643,27 @@ void DrawTexture::OnDraw() {
     {1.0, 0.0, 0.0, 1.0},
   };
 
+  float al = 0.6;
+  for(int i = 0; i < _countof(fColor); i ++) {
+    fColor[i][3] = al;
+  }
+  float ws = 100;
+ 
   glEnableClientState(GL_NORMAL_ARRAY);
   glNormalPointer(GL_FLOAT, 0, normal);
 
   glEnableClientState(GL_COLOR_ARRAY);
   glColorPointer(4, GL_FLOAT, 0, fColor);
 
-  glBindTexture(GL_TEXTURE_2D, texture_);  
+  // glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+  // glTexCoordPointer();
 
-  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  glBindTexture(GL_TEXTURE_2D, textures_[1]);  
+  glGetTexLevelParameterfv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &ws);
+  glDrawElements(GL_TRIANGLE_FAN, _countof(index)/2, GL_UNSIGNED_INT, index);
 
   glDrawArrays(GL_LINES, 4, 4);
   glPopMatrix();
-
-#if 1
-
-  glDisable(GL_TEXTURE_2D);
-  glDrawArrays(GL_LINES, 4, 4);
-#endif
 
   glPopMatrix();
 }
@@ -540,27 +671,35 @@ void DrawTexture::OnTimer() {
   roate_angle_ += 0.1;
 }
 
-bool DrawTexture::LoadGLTextures(wchar_t* file_name, GLuint * texture) {
-  std::vector<unsigned char> buffer;
-  dcodec_utils::BitmapData bitmap;
+bool DrawTexture::LoadGLTextures(const std::vector<std::wstring>& files) {  
+  textures_.resize(files.size());
 
-  dcodec_utils::load_file(file_name, buffer);
-  if (!dcodec_utils::parse_bmp(buffer, bitmap))
-    return false;
-
-  w_ = bitmap.w;
-  h_ = bitmap.h;
-
-  glGenTextures(1,texture);     // Create The Texture
+  glGenTextures(textures_.size(), &textures_[0]);
   glPixelStorei(GL_UNPACK_ALIGNMENT, 4);  
 
-  glBindTexture(GL_TEXTURE_2D, *texture);  
-  // Bind To The Texture ID 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);   
-  // Linear Min Filter 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);   
-  // Linear Mag Filter 
-  glTexImage2D(GL_TEXTURE_2D, 0, 3, bitmap.w, bitmap.h, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, &bitmap.data[0]); 
+  for(size_t i = 0; i < files.size(); i ++) {
+    std::vector<unsigned char> buffer;
+    dcodec_utils::BitmapData bitmap;
+
+    dcodec_utils::load_file(files[i].c_str(), buffer);
+
+    if (!dcodec_utils::parse_bmp(buffer, bitmap))
+      continue;
+
+    w_ = bitmap.w;
+    h_ = bitmap.h;
+
+    glBindTexture(GL_TEXTURE_2D, textures_[i]);  
+    // Bind To The Texture ID 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);   
+    // Linear Min Filter 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);   
+    // Linear Mag Filter 
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bitmap.w, bitmap.h, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, &bitmap.data[0]); 
+
+    
+
+  }
 
   return true;
 }

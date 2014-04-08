@@ -1,6 +1,8 @@
 #pragma once
 
 #include "..\gl_draw\draw_method.h"
+#include <vector>
+#include <string>
 
 class DrawSample 
   : public DrawMethod {
@@ -62,14 +64,13 @@ public:
   virtual void OnTimer() override;
 
 private:
-  bool LoadGLTextures(wchar_t* file_name,  unsigned int* texture);
+  bool LoadGLTextures(const std::vector<std::wstring>& files);
 
 private:
-  unsigned int texture_;
+  std::vector<unsigned int> textures_;
 
   float     roate_angle_;
   int w_;
   int h_;
   DrawWays  draw_ways_;
 };
-
