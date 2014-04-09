@@ -369,13 +369,45 @@ default:
   }
 }
 
+//////////////////////////////////////////////////////////////////////////
+
+GLfloat  horizontal[3][3] = 
+{
+  { 0, -1, 0 },
+  { 0,  1, 0 },
+  { 0,  0, 0 }
+};
+
+GLfloat  vertical[3][3] =
+{
+  {  0, 0, 0 },
+  { -1, 1, 0 },
+  {  0, 0, 0 }
+};
+
+GLfloat  laplacian[3][3] = {
+  { -0.125, -0.125, -0.125 },
+  { -0.125,  1.0  , -0.125 },
+  { -0.125, -0.125, -0.125 },
+};
+
+GLfloat  sobel[3][3] =
+{
+  { -1, -2, -1 },
+  { 0, 0, 0 },
+  {  1, 2, 1 }
+};
 
 DrawTexture::DrawTexture(DrawWays draw_ways) 
 : draw_ways_(draw_ways), roate_angle_(0.0f) {
 }
 
 void DrawTexture::OnInit() {  
-  glClearColor (1.0, 0.0, 0.0, 0.0);
+  glClearColor (0.0, 0.0, 0.0, 0.0);
+
+  glConvolutionFilter2D(GL_CONVOLUTION_2D, GL_LUMINANCE,
+    3, 3, GL_LUMINANCE, GL_FLOAT, sobel);
+  glEnable(GL_CONVOLUTION_2D);
 }
 
 void drawTexture(int texture_id, float rc[4], float alpha) {
