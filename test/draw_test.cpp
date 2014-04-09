@@ -405,9 +405,11 @@ DrawTexture::DrawTexture(DrawWays draw_ways)
 void DrawTexture::OnInit() {  
   glClearColor (0.0, 0.0, 0.0, 0.0);
 
-  glConvolutionFilter2D(GL_CONVOLUTION_2D, GL_LUMINANCE,
-    3, 3, GL_LUMINANCE, GL_FLOAT, sobel);
-  glEnable(GL_CONVOLUTION_2D);
+  if (glConvolutionFilter2D != NULL) {
+    glConvolutionFilter2D(GL_CONVOLUTION_2D, GL_LUMINANCE,
+      3, 3, GL_LUMINANCE, GL_FLOAT, sobel);
+    glEnable(GL_CONVOLUTION_2D);
+  }
 }
 
 void drawTexture(int texture_id, float rc[4], float alpha) {
@@ -488,8 +490,17 @@ void drawCenterTexture(int texture_id, float alpha) {
   ::drawTexture(texture_id, rc, alpha);
   ::glPopMatrix();
 }
+void process_img(wchar_t* file_name, wchar_t* save_name);
 
 void DrawTexture::OnDraw() {
+
+  static bool once = true;
+  if (once) {
+    once = false;
+    process_img(L"texture_test.bmp", L"as.bmp");
+    return;
+  }
+
   POINT pt = {0, 0};
 
   if (textures_.empty()) {
@@ -728,9 +739,6 @@ bool DrawTexture::LoadGLTextures(const std::vector<std::wstring>& files) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);   
     // Linear Mag Filter 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bitmap.w, bitmap.h, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, &bitmap.data[0]); 
-
-    
-
   }
 
   return true;

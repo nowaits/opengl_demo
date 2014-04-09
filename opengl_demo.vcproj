@@ -228,6 +228,10 @@
 				RelativePath=".\test\draw_test.h"
 				>
 			</File>
+			<File
+				RelativePath=".\test\gpu_img.cc"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="utils"
